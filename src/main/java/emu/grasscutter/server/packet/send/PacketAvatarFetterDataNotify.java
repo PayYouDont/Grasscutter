@@ -1,21 +1,26 @@
 package emu.grasscutter.server.packet.send;
 
-import emu.grasscutter.game.avatar.GenshinAvatar;
+import emu.grasscutter.game.avatar.Avatar;
 import emu.grasscutter.game.props.FetterState;
-import emu.grasscutter.net.packet.GenshinPacket;
+import emu.grasscutter.net.packet.BasePacket;
 import emu.grasscutter.net.packet.PacketOpcodes;
 import emu.grasscutter.net.proto.AvatarFetterDataNotifyOuterClass.AvatarFetterDataNotify;
 import emu.grasscutter.net.proto.AvatarFetterInfoOuterClass.AvatarFetterInfo;
 import emu.grasscutter.net.proto.FetterDataOuterClass.FetterData;
 
-public class PacketAvatarFetterDataNotify extends GenshinPacket {
+public class PacketAvatarFetterDataNotify extends BasePacket {
 	
-	public PacketAvatarFetterDataNotify(GenshinAvatar avatar) {
+	public PacketAvatarFetterDataNotify(Avatar avatar) {
 		super(PacketOpcodes.AvatarFetterDataNotify);
 
+		int fetterLevel = avatar.getFetterLevel();
+
 		AvatarFetterInfo.Builder avatarFetter = AvatarFetterInfo.newBuilder()
-				.setExpLevel(avatar.getFetterLevel())
-				.setExpNumber(avatar.getFetterExp());
+				.setExpLevel(avatar.getFetterLevel());
+		
+		if (fetterLevel != 10) {
+			avatarFetter.setExpNumber(avatar.getFetterExp());
+		}
 		
 		if (avatar.getFetterList() != null) {
 			for (int i = 0; i < avatar.getFetterList().size(); i++) {
@@ -27,11 +32,10 @@ public class PacketAvatarFetterDataNotify extends GenshinPacket {
 			}
 		}
 		
-		int rewardId = avatar.getNameCardRewardId();
 		int cardId = avatar.getNameCardId();
 
 		if (avatar.getPlayer().getNameCardList().contains(cardId)) {
-			avatarFetter.addRewardedFetterLevelList(rewardId);
+			avatarFetter.addRewardedFetterLevelList(10);
 		}
 
 		AvatarFetterInfo avatarFetterInfo = avatarFetter.build();
